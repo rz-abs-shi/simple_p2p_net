@@ -13,7 +13,6 @@ class Stream:
         Code design suggestion:
             1. Make a separate Thread for your TCPServer and start immediately.
 
-
         :param ip: 15 characters
         :param port: 5 characters
         """

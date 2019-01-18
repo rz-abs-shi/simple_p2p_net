@@ -4,10 +4,8 @@ import time
 class GraphNode:
     def __init__(self, address):
         """
-
         :param address: (ip, port)
         :type address: tuple
-
         """
         pass
 

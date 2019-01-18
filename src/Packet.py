@@ -119,7 +119,7 @@
                 |             Message (#Length Chars)            |
                 |________________________________________________|
 
-            The message that want to broadcast to hole network. Right now this type only includes a plain text.
+            The message that want to broadcast to whole network. Right now this type only includes a plain text.
         
         Reunion:
             Hello:
