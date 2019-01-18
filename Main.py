@@ -1,4 +1,4 @@
-from src.Peer import Peer
+from Peer import Peer
 import argparse
 from ipaddress import ip_address
 
@@ -13,6 +13,8 @@ if __name__ == "__main__":
     parser.add_argument('--root-port', help='port of root peer', type=int, dest='root_port')
     
     args = parser.parse_args()
+
+    print(args)
 
     if args.is_root:
         peer = Peer(args.ip, args.port, is_root=True)

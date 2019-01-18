@@ -1,4 +1,4 @@
-from src.tools.simpletcp.clientsocket import ClientSocket
+from tools.simpletcp.clientsocket import ClientSocket
 
 
 class Node:

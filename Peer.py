@@ -1,8 +1,8 @@
-from src.Stream import Stream
-from src.Packet import Packet, PacketFactory
-from src.UserInterface import UserInterface
-from src.tools.SemiNode import SemiNode
-from src.tools.NetworkGraph import NetworkGraph, GraphNode
+from Stream import Stream
+from Packet import Packet, PacketFactory
+from UserInterface import UserInterface
+from tools.SemiNode import SemiNode
+from tools.NetworkGraph import NetworkGraph, GraphNode
 import time
 import threading
 

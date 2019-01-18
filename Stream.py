@@ -1,6 +1,6 @@
-from src.tools.simpletcp.tcpserver import TCPServer
+from tools.simpletcp.tcpserver import TCPServer
 
-from src.tools.Node import Node
+from tools.Node import Node
 import threading
 
 
