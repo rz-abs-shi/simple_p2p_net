@@ -15,6 +15,7 @@ import threading
 
 TIME_STEP = 2
 
+
 class Peer:
     def __init__(self, server_ip, server_port, is_root=False, root_address=None):
         """
@@ -47,11 +48,12 @@ class Peer:
         self.address = (server_ip, server_port)
         self.is_root = is_root
         self.root_address = root_address
+        self._live = False
 
         self.stream = Stream(*self.address)
         self._last_update = time.time()
 
-        self.user_interface = UserInterface()
+        self.user_interface = UserInterface(self.address)
         self.start_user_interface()
 
     def start_user_interface(self):
@@ -63,7 +65,7 @@ class Peer:
         
         self.user_interface.start()        
 
-    def handle_user_interface_command(self, command):
+    def handle_user_interface_command(self, command, *args):
         """
         In every interval, we should parse user command that buffered from our UserInterface.
         All of the valid commands are listed below:
@@ -76,7 +78,27 @@ class Peer:
             2. Don't forget to clear our UserInterface buffer.
         :return:
         """
-        pass
+
+        if self.is_root and command in (UserInterface.CMD_REGISTER, UserInterface.CMD_ADVERTISE):
+            print("Ignoring command %s in root." % command)
+
+        if command == UserInterface.CMD_EXIT:
+            self.shutdown()
+            return
+
+        elif command == UserInterface.CMD_REGISTER:
+            packet = PacketFactory.new_register_packet('REQ', self.address, self.root_address)
+
+        elif command == UserInterface.CMD_ADVERTISE:
+            packet = PacketFactory.new_advertise_packet('REQ', self.address)
+
+        elif command == UserInterface.CMD_MESSAGE:
+            packet = PacketFactory.new_message_packet(args[0], self.address)
+
+        else:
+            raise NotImplemented("%s command not defined" % command)
+
+        self.stream.get_node_by_server(*self.address).add_message_to_out_buff(packet.get_buf())
 
     def run(self):
         """
@@ -84,7 +106,7 @@ class Peer:
         * sleep for at most 2 seconds
         """
 
-        while True:
+        while self._live:
             now_time = time.time()
             delta = now_time - self._last_update
             self._last_update = now_time
@@ -120,7 +142,7 @@ class Peer:
 
         # Handling user interface
         for buf in self.user_interface.read_and_clear_buffer():
-            self.handle_user_interface_command(buf)
+            self.handle_user_interface_command(*buf)
 
         self.stream.send_out_buf_messages()
 
@@ -320,3 +342,6 @@ class Peer:
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
         pass
+
+    def shutdown(self):
+        self._live = True
