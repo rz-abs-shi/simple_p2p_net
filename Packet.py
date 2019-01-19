@@ -187,6 +187,9 @@ class Packet:
     TYPE_MESSAGE = 4
     TYPE_REUNION = 5
 
+    RESPONSE = 'RES'
+    REQUEST = 'REQ'
+
     def __init__(self, buf):
         """
         The decoded buffer should convert to a new packet.
@@ -335,7 +338,7 @@ class PacketFactory:
         pass
 
     @staticmethod
-    def new_register_packet(type, source_server_address, address=(None, None)):
+    def new_register_packet(type, source_server_address, address=(None, None)) -> Packet:
         """
         :param type: Type of Register packet
         :param source_server_address: Server address of the packet sender.

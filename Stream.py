@@ -51,7 +51,7 @@ class Stream:
         """
         self._server_in_buf.clear()
 
-    def add_node(self, server_address, set_register_connection=False):
+    def add_node(self, server_address, set_register_connection=False) -> Node:
         """
         Will add new a node to our Stream.
 

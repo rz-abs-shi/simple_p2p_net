@@ -1,6 +1,7 @@
 from Stream import Stream
 from Packet import Packet, PacketFactory
 from UserInterface import UserInterface
+from tools.Node import Node
 from tools.SemiNode import SemiNode
 from tools.NetworkGraph import NetworkGraph, GraphNode
 import time
@@ -48,13 +49,15 @@ class Peer:
         self.address = (server_ip, server_port)
         self.is_root = is_root
         self.root_address = root_address
-        self._live = False
+        self._alive = False
 
         self.stream = Stream(*self.address)
         self._last_update = time.time()
 
         self.user_interface = UserInterface(self.address)
         self.user_interface.start()
+
+        self.registered_to_root = False
 
     def handle_user_interface_command(self, command, *args):
         """
@@ -72,24 +75,41 @@ class Peer:
 
         if self.is_root and command in (UserInterface.CMD_REGISTER, UserInterface.CMD_ADVERTISE):
             print("Ignoring command %s in root." % command)
+            return
 
         if command == UserInterface.CMD_EXIT:
             self.shutdown()
             return
 
         elif command == UserInterface.CMD_REGISTER:
-            packet = PacketFactory.new_register_packet('REQ', self.address, self.root_address)
+            if self.is_registered_to_root():
+                print("Ignoring command because this node is already registered.")
+                return
+
+            packet = PacketFactory.new_register_packet(Packet.REQUEST, self.address, self.root_address)
+            node = self.stream.add_node(self.root_address, set_register_connection=True)
+            node.add_message_to_out_buff(packet.get_buf())
+            return
 
         elif command == UserInterface.CMD_ADVERTISE:
-            packet = PacketFactory.new_advertise_packet('REQ', self.address)
+            if self.is_joined_to_parent():
+                print("Ignoring command because this node is already joined.")
+                return
+
+            packet = PacketFactory.new_advertise_packet(Packet.REQUEST, self.address)
+
+            node = self.stream.get_node_by_server(*self.root_address)
+            if not node:
+                raise Exception("Failed to send advertise packet because no connection node found to root")
+            else:
+                node.add_message_to_out_buff(packet.get_buf())
 
         elif command == UserInterface.CMD_MESSAGE:
             packet = PacketFactory.new_message_packet(args[0], self.address)
+            self.send_broadcast_packet(packet)
 
         else:
             raise NotImplemented("%s command not defined" % command)
-
-        self.stream.get_node_by_server(*self.address).add_message_to_out_buff(packet.get_buf())
 
     def run(self):
         """
@@ -97,7 +117,7 @@ class Peer:
         * sleep for at most 2 seconds
         """
 
-        while self._live:
+        while self._alive:
             now_time = time.time()
             delta = now_time - self._last_update
             self._last_update = now_time
@@ -213,16 +233,26 @@ class Peer:
         else:
             print("Ignoring invalid packet of type: %s" % _type)
 
-    def __check_registered(self, source_address):
+    def is_registered_to_root(self):
+        return self.is_root or self.registered_to_root
+
+    def get_register_node(self) -> Node:
+        return
+
+    def is_joined_to_parent(self):
+        # TODO: check if has parent
+        return self.is_root
+
+    def __check_source_registered(self, source_address) -> Node:
         """
         If the Peer is the root of the network we need to find that is a node registered or not.
 
         :param source_address: Unknown IP/Port address.
         :type source_address: tuple
 
-        :return:
+        :return: Node
         """
-        pass
+        return Node()
 
     def __handle_advertise_packet(self, packet):
         """
@@ -255,7 +285,7 @@ class Peer:
         """
         pass
 
-    def __handle_register_packet(self, packet):
+    def __handle_register_packet(self, packet: Packet):
         """
         For registration a new node to the network at first we should make a Node with stream.add_node for'sender' and
         save it.
@@ -270,7 +300,24 @@ class Peer:
         :type packet Packet
         :return:
         """
-        pass
+        _type = packet.get_body()[0]
+
+        if _type == Packet.REQUEST:
+            if not self.is_root:
+                print("Ignoring register request packet for client")
+                return
+
+            sender_address = packet.get_source_server_address()
+            node = self.__check_source_registered(sender_address)
+
+            if not node:
+                node = self.stream.add_node(sender_address, set_register_connection=True)
+
+            packet = PacketFactory.new_register_packet(Packet.RESPONSE, self.address)
+            node.add_message_to_out_buff(packet.get_buf())
+
+        elif _type == Packet.RESPONSE:
+            pass
 
     def __check_neighbour(self, address):
         """
@@ -354,4 +401,4 @@ class Peer:
         pass
 
     def shutdown(self):
-        self._live = True
+        self._alive = False
