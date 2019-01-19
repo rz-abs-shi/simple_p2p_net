@@ -21,6 +21,7 @@ class Stream:
         port = Node.parse_port(port)
 
         self._server_in_buf = []
+        self._nodes = {}
 
         def callback(address, queue, data):
             """
@@ -33,8 +34,6 @@ class Stream:
             """
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
-
-        pass
 
     def get_server_address(self):
         """
@@ -111,7 +110,7 @@ class Stream:
         """
         pass
 
-    def read_in_buf(self):
+    def read_in_buf(self) -> list:
         """
         Only returns the input buffer of our TCPServer.
 
@@ -120,6 +119,11 @@ class Stream:
         """
         return self._server_in_buf
 
+    def read_and_clear_in_buf(self) -> list:
+        in_bufs = self._server_in_buf
+        self._server_in_buf = []
+        return in_bufs
+    
     def send_messages_to_node(self, node):
         """
         Send buffered messages to the 'node'
@@ -141,4 +145,5 @@ class Stream:
 
         :return:
         """
-        pass
+        for node in self._nodes:  # type: Node
+            node.send_message()

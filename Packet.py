@@ -280,7 +280,7 @@ class PacketFactory:
         :rtype: Packet
 
         """
-        pass
+        return Packet(buffer)
 
     @staticmethod
     def new_reunion_packet(type, source_address, nodes_array):

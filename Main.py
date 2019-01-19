@@ -14,8 +14,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    print(args)
-
     if args.is_root:
         peer = Peer(args.ip, args.port, is_root=True)
     else:

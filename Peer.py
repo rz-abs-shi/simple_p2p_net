@@ -13,6 +13,7 @@ import threading
     
 """
 
+TIME_STEP = 2
 
 class Peer:
     def __init__(self, server_ip, server_port, is_root=False, root_address=None):
@@ -42,7 +43,16 @@ class Peer:
         :type is_root: bool
         :type root_address: tuple
         """
-        pass
+        
+        self.address = (server_ip, server_port)
+        self.is_root = is_root
+        self.root_address = root_address
+
+        self.stream = Stream(*self.address)
+        self._last_update = time.time()
+
+        self.user_interface = UserInterface()
+        self.start_user_interface()
 
     def start_user_interface(self):
         """
@@ -50,9 +60,10 @@ class Peer:
 
         :return:
         """
-        pass
+        
+        self.user_interface.start()        
 
-    def handle_user_interface_buffer(self):
+    def handle_user_interface_command(self, command):
         """
         In every interval, we should parse user command that buffered from our UserInterface.
         All of the valid commands are listed below:
@@ -69,6 +80,23 @@ class Peer:
 
     def run(self):
         """
+        update loop handler
+        * sleep for at most 2 seconds
+        """
+
+        while True:
+            now_time = time.time()
+            delta = now_time - self._last_update
+            self._last_update = now_time
+
+            self.update(delta)
+
+            sleep_time = TIME_STEP - (time.time() - now_time)
+            if sleep_time > 0.0001:
+                time.sleep(sleep_time)
+
+    def update(self, delta: float):
+        """
         The main loop of the program.
 
         Code design suggestions:
@@ -76,7 +104,6 @@ class Peer:
             2. Handle all packets were received from our Stream server.
             3. Parse user_interface_buffer to make message packets.
             4. Send packets stored in nodes buffer of our Stream object.
-            5. ** sleep the current thread for 2 seconds **
 
         Warnings:
             1. At first check reunion daemon condition; Maybe we have a problem in this time
@@ -85,7 +112,17 @@ class Peer:
 
         :return:
         """
-        pass
+        
+        # Handling in buffer
+        for buf in self.stream.read_and_clear_in_buf():
+            packet = PacketFactory.parse_buffer(buf)
+            self.handle_packet(packet)
+
+        # Handling user interface
+        for buf in self.user_interface.read_and_clear_buffer():
+            self.handle_user_interface_command(buf)
+
+        self.stream.send_out_buf_messages()
 
     def run_reunion_daemon(self):
         """
