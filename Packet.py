@@ -181,6 +181,12 @@ from struct import *
 
 
 class Packet:
+    TYPE_REGISTER = 1
+    TYPE_ADVERTISE = 2
+    TYPE_JOIN = 3
+    TYPE_MESSAGE = 4
+    TYPE_REUNION = 5
+
     def __init__(self, buf):
         """
         The decoded buffer should convert to a new packet.

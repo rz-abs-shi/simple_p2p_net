@@ -54,16 +54,7 @@ class Peer:
         self._last_update = time.time()
 
         self.user_interface = UserInterface(self.address)
-        self.start_user_interface()
-
-    def start_user_interface(self):
-        """
-        For starting UserInterface thread.
-
-        :return:
-        """
-        
-        self.user_interface.start()        
+        self.user_interface.start()
 
     def handle_user_interface_command(self, command, *args):
         """
@@ -188,7 +179,7 @@ class Peer:
         """
         pass
 
-    def handle_packet(self, packet):
+    def handle_packet(self, packet: Packet):
         """
 
         This function act as a wrapper for other handle_###_packet methods to handle the packet.
@@ -201,7 +192,26 @@ class Peer:
         :type packet Packet
 
         """
-        pass
+
+        _type = packet.get_type()
+
+        if _type == packet.TYPE_REGISTER:
+            self.__handle_register_packet(packet)
+
+        elif _type == packet.TYPE_ADVERTISE:
+            self.__handle_advertise_packet(packet)
+
+        elif _type == packet.TYPE_JOIN:
+            self.__handle_join_packet(packet)
+
+        elif _type == packet.TYPE_MESSAGE:
+            self.__handle_message_packet(packet)
+
+        elif _type == packet.TYPE_REUNION:
+            self.__handle_reunion_packet(packet)
+
+        else:
+            print("Ignoring invalid packet of type: %s" % _type)
 
     def __check_registered(self, source_address):
         """
