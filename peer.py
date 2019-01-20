@@ -336,3 +336,6 @@ class Peer:
 
     def shutdown(self):
         self._alive = False
+
+    def send_packet(self, address: tuple, packet: Packet):
+        return self.stream.get_or_create_node_to_server(address).add_message_to_out_buff(packet.get_buf())

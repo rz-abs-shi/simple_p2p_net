@@ -56,7 +56,7 @@ class PeerClient(Peer):
                 return True
 
             packet = PacketFactory.new_register_packet(Packet.REQUEST, self.address, self.root_address)
-            self.stream.get_or_create_node_to_server(self.root_address, True).add_message_to_out_buff(packet.get_buf())
+            self.send_packet(self.root_address, packet)
 
             return True
 
@@ -67,7 +67,7 @@ class PeerClient(Peer):
 
             packet = PacketFactory.new_advertise_packet(Packet.REQUEST, self.address)
 
-            self.stream.get_or_create_node_to_server(self.root_address).add_message_to_out_buff(packet.get_buf())
+            self.send_packet(self.root_address, packet)
 
     def __handle_register_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
@@ -110,7 +110,7 @@ class PeerClient(Peer):
 
                 print("Sending join message")
                 packet = PacketFactory.new_join_packet((parent_ip, parent_port))
-                self.stream.get_or_create_node_to_server(parent_address).add_message_to_out_buff(packet.get_buf())
+                self.send_packet(parent_address, packet)
         else:
             print("Ignoring invalid advertise packet")
 

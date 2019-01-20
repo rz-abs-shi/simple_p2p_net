@@ -2,31 +2,31 @@ import time
 
 
 class GraphNode:
-    def __init__(self, address):
+    def __init__(self, address: tuple):
         """
         :param address: (ip, port)
         :type address: tuple
         """
+        self.address = address
+
+    def set_parent(self, parent: 'GraphNode'):
         pass
 
-    def set_parent(self, parent):
-        pass
-
-    def set_address(self, new_address):
+    def set_address(self, new_address: tuple):
         pass
 
     def __reset(self):
         pass
 
-    def add_child(self, child):
+    def add_child(self, child: 'GraphNode'):
         pass
 
 
 class NetworkGraph:
-    def __init__(self, root):
-        self.root = root
-        root.alive = True
-        self.nodes = [root]
+    def __init__(self, root_address: tuple):
+        self.root = GraphNode(root_address)
+        self.root.alive = True
+        self.nodes = [self.root]
 
     def find_live_node(self, sender):
         """
@@ -48,19 +48,19 @@ class NetworkGraph:
         """
         pass
 
-    def find_node(self, ip, port):
+    def find_node(self, address: tuple):
         pass
 
-    def turn_on_node(self, node_address):
+    def turn_on_node(self, address: tuple):
         pass
 
-    def turn_off_node(self, node_address):
+    def turn_off_node(self, address: tuple):
         pass
 
-    def remove_node(self, node_address):
+    def remove_node(self, address: tuple):
         pass
 
-    def add_node(self, ip, port, father_address):
+    def add_node(self, address: tuple, parent_address: tuple):
         """
         Add a new node with node_address if it does not exist in our NetworkGraph and set its father.
 
@@ -68,15 +68,13 @@ class NetworkGraph:
             1. Don't forget to set the new node as one of the father_address children.
             2. Before using this function make sure that there is a node which has father_address.
 
-        :param ip: IP address of the new node.
-        :param port: Port of the new node.
-        :param father_address: Father address of the new node
-
-        :type ip: str
-        :type port: int
-        :type father_address: tuple
-
-
         :return:
         """
         pass
+
+    def insert_node(self, address: tuple) -> tuple:
+        """
+        Search for a parent to this new node
+        :param address:
+        :return: address of parent
+        """

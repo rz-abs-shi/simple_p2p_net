@@ -1,10 +1,13 @@
 from . import Peer, Packet, PacketFactory
+from tools.NetworkGraph import NetworkGraph
 
 
 class PeerRoot(Peer):
 
     def __init__(self, address: tuple):
         super(PeerRoot, self).__init__(address)
+
+        self.graph = NetworkGraph(address)
 
     @property
     def is_root(self):
@@ -15,14 +18,20 @@ class PeerRoot(Peer):
 
         if _type == Packet.REQUEST:
             sender_address = packet.get_source_server_address()
-            packet = PacketFactory.new_register_packet(Packet.RESPONSE, self.address)
+            resp_packet = PacketFactory.new_register_packet(Packet.RESPONSE, self.address)
 
-            self.stream.get_or_create_node_to_server(sender_address, True).add_message_to_out_buff(packet.get_buf())
+            self.send_packet(sender_address, resp_packet)
+        else:
+            print("Ignoring register response packet for root")
 
-        elif _type == Packet.RESPONSE:
-            if self.is_root:
-                print("Ignoring register response packet for root")
-                return
+    def __handle_advertise_packet(self, packet: Packet):
+        _type = packet.get_body()[0:3]
+
+        if _type == Packet.REQUEST:
+            sender_address = packet.get_source_server_address()
+            parent_address = self.graph.insert_node(sender_address)
+            resp_packet = PacketFactory.new_advertise_packet(Packet.RESPONSE, self.address, parent_address)
+            self.send_packet(sender_address, resp_packet)
 
         else:
-            print("Ignoring invalid register packet")
+            print("Ignoring advertise response packet for root")

@@ -95,7 +95,7 @@ class Stream:
         """
         pass
 
-    def get_or_create_node_to_server(self, address: tuple, register_connection=False) -> 'Node':
+    def get_or_create_node_to_server(self, address: tuple) -> 'Node':
         pass
 
     def add_message_to_out_buff(self, address, message):
