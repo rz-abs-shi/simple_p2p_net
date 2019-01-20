@@ -8,6 +8,7 @@ class PeerRoot(Peer):
         super(PeerRoot, self).__init__(address)
 
         self.graph = NetworkGraph(address)
+        self.run_reunion_daemon()
 
     @property
     def is_root(self):

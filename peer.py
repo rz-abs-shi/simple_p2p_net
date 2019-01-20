@@ -1,11 +1,8 @@
-from stream import Stream
-from packet import Packet, PacketFactory
-from user_interface import UserInterface
-from tools.Node import Node
-from tools.SemiNode import SemiNode
-from tools.NetworkGraph import NetworkGraph, GraphNode
 import time
-import threading
+
+from packet import Packet, PacketFactory
+from stream import Stream
+from user_interface import UserInterface
 
 """
     Peer is our main object in this project.

@@ -111,6 +111,9 @@ class PeerClient(Peer):
                 print("Sending join message")
                 packet = PacketFactory.new_join_packet((parent_ip, parent_port))
                 self.send_packet(parent_address, packet)
+
+                print("Starting reunion daemon")
+                self.run_reunion_daemon()
         else:
             print("Ignoring invalid advertise packet")
 
