@@ -189,10 +189,6 @@ class Peer:
     def get_register_node(self) -> Node:
         return
 
-    def is_joined_to_parent(self):
-        # TODO: check if has parent
-        return self.is_root
-
     def __check_source_registered(self, source_address) -> Node:
         """
         If the Peer is the root of the network we need to find that is a node registered or not.

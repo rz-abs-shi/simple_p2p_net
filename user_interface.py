@@ -11,10 +11,11 @@ class UserInterface(threading.Thread):
 
     VALID_COMMANDS = (CMD_EXIT, CMD_REGISTER, CMD_ADVERTISE, CMD_MESSAGE)
 
-    def __init__(self, address, *args, **kwargs):
+    def __init__(self, address, is_root=False, *args, **kwargs):
         super(UserInterface, self).__init__(*args, **kwargs)
         self._buffer = []
         self._address = address
+        self._is_root = is_root
 
     def run(self):
         """
@@ -22,10 +23,15 @@ class UserInterface(threading.Thread):
         This method runs every time to see whether there are new messages or not.
         """
 
+        if self._is_root:
+            _input_prefix = "[%s:%s]> " % self._address
+        else:
+            _input_prefix = "%s:%s> " % self._address
+
         print("Welcome here")
 
         while True:
-            command = input("%s:%s> " % self._address)
+            command = input(_input_prefix)
             command_parts = shlex.split(command)
 
             if not command_parts:

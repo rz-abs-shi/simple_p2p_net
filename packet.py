@@ -325,7 +325,7 @@ class PacketFactory:
         pass
 
     @staticmethod
-    def new_join_packet(source_server_address):
+    def new_join_packet(source_server_address) -> Packet:
         """
         :param source_server_address: Server address of the packet sender.
 

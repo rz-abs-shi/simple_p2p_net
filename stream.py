@@ -95,6 +95,9 @@ class Stream:
         """
         pass
 
+    def get_or_create_node_to_server(self, address: tuple, register_connection=False) -> 'Node':
+        pass
+
     def add_message_to_out_buff(self, address, message):
         """
         In this function, we will add the message to the output buffer of the node that has the input address.
