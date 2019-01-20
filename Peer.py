@@ -317,7 +317,15 @@ class Peer:
             node.add_message_to_out_buff(packet.get_buf())
 
         elif _type == Packet.RESPONSE:
-            pass
+            if self.is_root:
+                print("Ignoring register response packet for root")
+                return
+
+            self.registered_to_root = True
+            print("Successfully registered")
+
+        else:
+            raise NotImplemented
 
     def __check_neighbour(self, address):
         """
