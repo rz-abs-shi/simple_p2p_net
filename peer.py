@@ -255,36 +255,7 @@ class Peer:
         :type packet Packet
         :return:
         """
-        _type = packet.get_body()[0]
-
-        if _type == Packet.REQUEST:
-            if not self.is_root:
-                print("Ignoring register request packet for client")
-                return
-
-            sender_address = packet.get_source_server_address()
-            node = self.__check_source_registered(sender_address)
-
-            if not node:
-                node = self.stream.add_node(sender_address, set_register_connection=True)
-
-            packet = PacketFactory.new_register_packet(Packet.RESPONSE, self.address)
-            node.add_message_to_out_buff(packet.get_buf())
-
-        elif _type == Packet.RESPONSE:
-            if self.is_root:
-                print("Ignoring register response packet for root")
-                return
-
-            elif self.is_registered_to_root():
-                print("Ignoring register request packet, because we are already registered!")
-                return
-
-            self.registered_to_root = True
-            print("Successfully registered")
-
-        else:
-            raise NotImplemented
+        raise NotImplementedError
 
     def __handle_join_packet(self, packet: Packet):
         """

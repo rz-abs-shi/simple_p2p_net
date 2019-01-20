@@ -35,3 +35,21 @@ class PeerClient(Peer):
                 raise Exception("Failed to send advertise packet because no connection node found to root")
             else:
                 node.add_message_to_out_buff(packet.get_buf())
+
+    def __handle_register_packet(self, packet: Packet):
+        _type = packet.get_body()[0]
+
+        if _type == Packet.REQUEST:
+            print("Ignoring register request packet for client")
+
+        elif _type == Packet.RESPONSE:
+            if self.registered_to_root:
+                print("Ignoring register request packet, because is already registered!")
+                return
+
+            self.registered_to_root = True
+            print("Successfully registered")
+
+        else:
+            print("Ignoring invalid register packet")
+
