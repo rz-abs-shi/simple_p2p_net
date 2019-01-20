@@ -20,7 +20,7 @@ class PeerRoot(Peer):
             sender_address = packet.get_source_server_address()
             resp_packet = PacketFactory.new_register_packet(Packet.RESPONSE, self.address)
 
-            self.send_packet(sender_address, resp_packet)
+            self.send_packet(sender_address, resp_packet, register_connection=True)
         else:
             print("Ignoring register response packet for root")
 

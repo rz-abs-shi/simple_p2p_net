@@ -186,20 +186,6 @@ class Peer:
         else:
             print("Ignoring invalid packet of type: %s" % _type)
 
-    def get_register_node(self) -> Node:
-        return
-
-    def __check_source_registered(self, source_address) -> Node:
-        """
-        If the Peer is the root of the network we need to find that is a node registered or not.
-
-        :param source_address: Unknown IP/Port address.
-        :type source_address: tuple
-
-        :return: Node
-        """
-        return Node()
-
     def __handle_advertise_packet(self, packet):
         """
         For advertising peers in the network, It is peer discovery message.
@@ -265,7 +251,8 @@ class Peer:
 
         :return:
         """
-        pass
+        sender_address = packet.get_source_server_address()
+        self.stream.add_node(sender_address)
 
     def __handle_reunion_packet(self, packet):
         """
@@ -337,5 +324,6 @@ class Peer:
     def shutdown(self):
         self._alive = False
 
-    def send_packet(self, address: tuple, packet: Packet):
-        return self.stream.get_or_create_node_to_server(address).add_message_to_out_buff(packet.get_buf())
+    def send_packet(self, address: tuple, packet: Packet, register_connection=False):
+        node = self.stream.get_or_create_node_to_server(address, register_connection)
+        return node.add_message_to_out_buff(packet.get_buf())

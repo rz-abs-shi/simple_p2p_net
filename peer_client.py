@@ -56,7 +56,7 @@ class PeerClient(Peer):
                 return True
 
             packet = PacketFactory.new_register_packet(Packet.REQUEST, self.address, self.root_address)
-            self.send_packet(self.root_address, packet)
+            self.send_packet(self.root_address, packet, register_connection=True)
 
             return True
 
