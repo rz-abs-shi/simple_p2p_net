@@ -1,4 +1,4 @@
-from Peer import Peer
+from . import PeerRoot, PeerClient
 import argparse
 from ipaddress import ip_address
 
@@ -15,12 +15,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.is_root:
-        peer = Peer(str(args.ip), args.port, is_root=True)
+        peer = PeerRoot(str(args.ip), args.port)
     else:
         if args.root_port is None or args.root_ip is None:
             print("Error: you should specify root-ip and root-port")
             exit(1)
 
-        peer = Peer(args.ip, args.port, is_root=False, root_address=(str(args.root_ip), args.root_port))
+        peer = PeerClient(args.ip, args.port, root_address=(str(args.root_ip), args.root_port))
 
     peer.run()

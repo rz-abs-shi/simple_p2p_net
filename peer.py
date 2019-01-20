@@ -1,6 +1,6 @@
-from Stream import Stream
-from Packet import Packet, PacketFactory
-from UserInterface import UserInterface
+from stream import Stream
+from packet import Packet, PacketFactory
+from user_interface import UserInterface
 from tools.Node import Node
 from tools.SemiNode import SemiNode
 from tools.NetworkGraph import NetworkGraph, GraphNode
@@ -18,7 +18,7 @@ TIME_STEP = 2
 
 
 class Peer:
-    def __init__(self, server_ip, server_port, is_root=False, root_address=None):
+    def __init__(self, address: tuple):
         """
         The Peer object constructor.
 
@@ -33,22 +33,9 @@ class Peer:
             2. In root Peer, start reunion daemon as soon as possible.
             3. In client Peer, we need to connect to the root of the network, Don't forget to set this connection
                as a register_connection.
-
-
-        :param server_ip: Server IP address for this Peer that should be pass to Stream.
-        :param server_port: Server Port address for this Peer that should be pass to Stream.
-        :param is_root: Specify that is this Peer root or not.
-        :param root_address: Root IP/Port address if we are a client.
-
-        :type server_ip: str
-        :type server_port: int
-        :type is_root: bool
-        :type root_address: tuple
         """
-        
-        self.address = (server_ip, server_port)
-        self.is_root = is_root
-        self.root_address = root_address
+
+        self.address = address
         self._alive = False
 
         self.stream = Stream(*self.address)
@@ -57,59 +44,25 @@ class Peer:
         self.user_interface = UserInterface(self.address)
         self.user_interface.start()
 
-        self.registered_to_root = False
+    @property
+    def is_root(self):
+        return False
 
-    def handle_user_interface_command(self, command, *args):
+    def handle_user_interface_command(self, command, *args) -> bool:
         """
-        In every interval, we should parse user command that buffered from our UserInterface.
-        All of the valid commands are listed below:
-            1. Register:  With this command, the client send a Register Request packet to the root of the network.
-            2. Advertise: Send an Advertise Request to the root of the network for finding first hope.
-            3. SendMessage: The following string will be added to a new Message packet and broadcast through the network.
-
-        Warnings:
-            1. Ignore irregular commands from the user.
-            2. Don't forget to clear our UserInterface buffer.
-        :return:
+        :param command:
+        :param args:
+        :return: if handled or not
         """
-
-        if self.is_root and command in (UserInterface.CMD_REGISTER, UserInterface.CMD_ADVERTISE):
-            print("Ignoring command %s in root." % command)
-            return
 
         if command == UserInterface.CMD_EXIT:
             self.shutdown()
-            return
-
-        elif command == UserInterface.CMD_REGISTER:
-            if self.is_registered_to_root():
-                print("Ignoring command because this node is already registered.")
-                return
-
-            packet = PacketFactory.new_register_packet(Packet.REQUEST, self.address, self.root_address)
-            node = self.stream.add_node(self.root_address, set_register_connection=True)
-            node.add_message_to_out_buff(packet.get_buf())
-            return
-
-        elif command == UserInterface.CMD_ADVERTISE:
-            if self.is_joined_to_parent():
-                print("Ignoring command because this node is already joined.")
-                return
-
-            packet = PacketFactory.new_advertise_packet(Packet.REQUEST, self.address)
-
-            node = self.stream.get_node_by_server(*self.root_address)
-            if not node:
-                raise Exception("Failed to send advertise packet because no connection node found to root")
-            else:
-                node.add_message_to_out_buff(packet.get_buf())
+            return True
 
         elif command == UserInterface.CMD_MESSAGE:
             packet = PacketFactory.new_message_packet(args[0], self.address)
             self.send_broadcast_packet(packet)
-
-        else:
-            raise NotImplemented("%s command not defined" % command)
+            return True
 
     def run(self):
         """
@@ -233,9 +186,6 @@ class Peer:
         else:
             print("Ignoring invalid packet of type: %s" % _type)
 
-    def is_registered_to_root(self):
-        return self.is_root or self.registered_to_root
-
     def get_register_node(self) -> Node:
         return
 
@@ -278,12 +228,17 @@ class Peer:
             4. When an Advertise Response packet arrived update our Peer parent for sending Reunion Packets.
 
         :param packet: Arrived register packet
-
         :type packet Packet
 
         :return:
         """
-        pass
+
+        _type = packet.get_body()[0]
+
+        if _type == Packet.REQUEST:
+            if not self.is_root:
+                print("Ignoring advertise request packet for client")
+                return
 
     def __handle_register_packet(self, packet: Packet):
         """
@@ -321,13 +276,17 @@ class Peer:
                 print("Ignoring register response packet for root")
                 return
 
+            elif self.is_registered_to_root():
+                print("Ignoring register request packet, because we are already registered!")
+                return
+
             self.registered_to_root = True
             print("Successfully registered")
 
         else:
             raise NotImplemented
 
-    def __handle_join_packet(self, packet):
+    def __handle_join_packet(self, packet: Packet):
         """
         When a Join packet received we should add a new node to our nodes array.
         In reality, there is a security level that forbids joining every node to our network.
