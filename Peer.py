@@ -327,28 +327,13 @@ class Peer:
         else:
             raise NotImplemented
 
-    def __check_neighbour(self, address):
+    def __handle_join_packet(self, packet):
         """
-        It checks is the address in our neighbours array or not.
+        When a Join packet received we should add a new node to our nodes array.
+        In reality, there is a security level that forbids joining every node to our network.
 
-        :param address: Unknown address
+        :param packet: Arrived register packet.
 
-        :type address: tuple
-
-        :return: Whether is address in our neighbours or not.
-        :rtype: bool
-        """
-        pass
-
-    def __handle_message_packet(self, packet):
-        """
-        Only broadcast message to the other nodes.
-
-        Warnings:
-            1. Do not forget to ignore messages from unknown sources.
-            2. Make sure that you are not sending a message to a register_connection.
-
-        :param packet: Arrived message packet
 
         :type packet Packet
 
@@ -381,17 +366,32 @@ class Peer:
         """
         pass
 
-    def __handle_join_packet(self, packet):
+    def __handle_message_packet(self, packet):
         """
-        When a Join packet received we should add a new node to our nodes array.
-        In reality, there is a security level that forbids joining every node to our network.
+        Only broadcast message to the other nodes.
 
-        :param packet: Arrived register packet.
+        Warnings:
+            1. Do not forget to ignore messages from unknown sources.
+            2. Make sure that you are not sending a message to a register_connection.
 
+        :param packet: Arrived message packet
 
         :type packet Packet
 
         :return:
+        """
+        pass
+
+    def __check_neighbour(self, address):
+        """
+        It checks is the address in our neighbours array or not.
+
+        :param address: Unknown address
+
+        :type address: tuple
+
+        :return: Whether is address in our neighbours or not.
+        :rtype: bool
         """
         pass
 
