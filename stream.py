@@ -79,7 +79,7 @@ class Stream:
         """
         pass
 
-    def get_node_by_server(self, ip, port):
+    def get_node_by_server(self, address: tuple) -> Node:
         """
 
         Will find the node that has IP/Port address of input.
@@ -87,15 +87,14 @@ class Stream:
         Warnings:
             1. Before comparing the address parse it to a standard format with Node.parse_### functions.
 
-        :param ip: input address IP
-        :param port: input address Port
+        :param address: input address (IP, Port) tuple
 
         :return: The node that input address.
         :rtype: Node
         """
         pass
 
-    def get_or_create_node_to_server(self, address: tuple, register_connection=False) -> 'Node':
+    def get_or_create_node_to_server(self, address: tuple, register_connection=False) -> Node:
         """
         :param address:
         :param register_connection: if set True send via register_connection node

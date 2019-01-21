@@ -134,20 +134,20 @@ class Peer:
         """
         pass
 
-    def send_broadcast_packet(self, broadcast_packet):
+    def send_broadcast_packet(self, packet):
         """
-
         For setting broadcast packets buffer into Nodes out_buff.
 
         Warnings:
             1. Don't send Message packets through register_connections.
 
-        :param broadcast_packet: The packet that should be broadcast through the network.
-        :type broadcast_packet: Packet
+        :param packet: The packet that should be broadcast through the network.
+        :type packet: Packet
 
         :return:
         """
-        pass
+        for node in self.stream.get_nodes(ignore_register=True):
+            node.add_message_to_out_buff(packet.get_buf())
 
     def handle_packet(self, packet: Packet):
         """
@@ -310,7 +310,7 @@ class Peer:
         :return: Whether is address in our neighbours or not.
         :rtype: bool
         """
-        pass
+        return bool(self.stream.get_node_by_server(address))
 
     def shutdown(self):
         self._alive = False
