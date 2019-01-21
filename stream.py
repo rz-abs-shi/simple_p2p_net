@@ -118,15 +118,6 @@ class Stream:
         """
         pass
 
-    def read_in_buf(self) -> list:
-        """
-        Only returns the input buffer of our TCPServer.
-
-        :return: TCPServer input buffer.
-        :rtype: list
-        """
-        return self._server_in_buf
-
     def read_and_clear_in_buf(self) -> list:
         in_bufs = self._server_in_buf
         self._server_in_buf = []
@@ -155,3 +146,6 @@ class Stream:
         """
         for node in self._nodes:  # type: Node
             node.send_message()
+
+    def get_nodes(self, ignore_register=False) -> list:
+        pass

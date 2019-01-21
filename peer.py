@@ -211,13 +211,7 @@ class Peer:
 
         :return:
         """
-
-        _type = packet.get_body()[0]
-
-        if _type == Packet.REQUEST:
-            if not self.is_root:
-                print("Ignoring advertise request packet for client")
-                return
+        raise NotImplementedError
 
     def __handle_register_packet(self, packet: Packet):
         """
@@ -290,9 +284,22 @@ class Peer:
 
         :return:
         """
-        pass
 
-    def __check_neighbour(self, address):
+        sender_address = packet.get_source_server_address()
+        message = packet.get_body()
+        print("Message from %s: `%s`" % (sender_address, message))
+
+        if self.__is_neighbour(sender_address):
+            for node in self.stream.get_nodes(ignore_register=True):
+                if node.get_server_address() == sender_address:
+                    continue
+
+                packet = PacketFactory.new_message_packet(message, self.address)
+                node.add_message_to_out_buff(packet.get_buf())
+        else:
+            print("Ignoring unknown message packet")
+
+    def __is_neighbour(self, address):
         """
         It checks is the address in our neighbours array or not.
 
@@ -302,19 +309,6 @@ class Peer:
 
         :return: Whether is address in our neighbours or not.
         :rtype: bool
-        """
-        pass
-
-    def __get_neighbour(self, sender):
-        """
-        Finds the best neighbour for the 'sender' from the network_nodes array.
-        This function only will call when you are a root peer.
-
-        Code design suggestion:
-            1. Use your NetworkGraph find_live_node to find the best neighbour.
-
-        :param sender: Sender of the packet
-        :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
         pass
 
