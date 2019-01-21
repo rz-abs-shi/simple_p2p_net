@@ -1,9 +1,8 @@
-from . import Peer, Packet, PacketFactory
+from . import Peer, Packet, PacketFactory, ReunionParser
 from tools.NetworkGraph import NetworkGraph
 
 
 class PeerRoot(Peer):
-
     def __init__(self, address: tuple):
         super(PeerRoot, self).__init__(address)
 
@@ -36,3 +35,28 @@ class PeerRoot(Peer):
 
         else:
             print("Ignoring advertise response packet for root")
+
+    def __handle_reunion_packet(self, packet: Packet):
+        parser = ReunionParser(packet)
+
+        if not parser.is_valid():
+            print("Ignoring invalid reunion packet")
+            return
+
+        neighbor = parser.entries[-1]
+
+        if not self.is_neighbour(neighbor):
+            print("Ignoring reunion packet received from non neighbor")
+            return
+
+        if parser.request_type == Packet.REQUEST:
+            for address in parser.entries:
+                node = self.graph.find_node(address)
+                if node:
+                    node.update_last_seen()
+
+            resp_packet = PacketFactory.new_reunion_packet(Packet.RESPONSE, self.address, list(reversed(parser.entries)))
+            self.send_packet(neighbor, resp_packet)
+
+        else:
+            print("Ignoring reunion response packet")

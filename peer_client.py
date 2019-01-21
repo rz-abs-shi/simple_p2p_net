@@ -1,4 +1,5 @@
 from . import UserInterface, Peer, PacketFactory, Packet
+import time
 
 
 class PeerStatus:
@@ -45,6 +46,8 @@ class PeerClient(Peer):
         self.root_address = root_address
         self.parent_address = None
         self.status = PeerStatus()
+        self.last_reunion_back_sent = 0
+        self.reunion_sent = False
 
     def handle_user_interface_command(self, command, *args):
         if super(PeerClient, self).handle_user_interface_command(command, *args):

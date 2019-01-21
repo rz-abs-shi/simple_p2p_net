@@ -41,6 +41,8 @@ class Peer:
         self.user_interface = UserInterface(self.address)
         self.user_interface.start()
 
+        self.reunion_active = False
+
     @property
     def is_root(self):
         return False
@@ -107,6 +109,12 @@ class Peer:
 
         self.stream.send_out_buf_messages()
 
+        if self.reunion_active:
+            self.update_reunion()
+
+    def update_reunion(self):
+        pass
+
     def run_reunion_daemon(self):
         """
 
@@ -132,7 +140,7 @@ class Peer:
 
         :return:
         """
-        pass
+        self.reunion_active = True
 
     def send_broadcast_packet(self, packet):
         """
@@ -289,7 +297,7 @@ class Peer:
         message = packet.get_body()
         print("Message from %s: `%s`" % (sender_address, message))
 
-        if self.__is_neighbour(sender_address):
+        if self.is_neighbour(sender_address):
             for node in self.stream.get_nodes(ignore_register=True):
                 if node.get_server_address() == sender_address:
                     continue
@@ -299,7 +307,7 @@ class Peer:
         else:
             print("Ignoring unknown message packet")
 
-    def __is_neighbour(self, address):
+    def is_neighbour(self, address):
         """
         It checks is the address in our neighbours array or not.
 

@@ -8,6 +8,7 @@ class GraphNode:
         :type address: tuple
         """
         self.address = address
+        self.last_seen = time.time()
 
     def set_parent(self, parent: 'GraphNode'):
         pass
@@ -20,6 +21,9 @@ class GraphNode:
 
     def add_child(self, child: 'GraphNode'):
         pass
+
+    def update_last_seen(self):
+        self.last_seen = time.time()
 
 
 class NetworkGraph:
@@ -48,7 +52,7 @@ class NetworkGraph:
         """
         pass
 
-    def find_node(self, address: tuple):
+    def find_node(self, address: tuple) -> GraphNode:
         pass
 
     def turn_on_node(self, address: tuple):
@@ -78,3 +82,12 @@ class NetworkGraph:
         :param address:
         :return: address of parent
         """
+
+    def get_inactive_nodes(self, active_threshold):
+        inactive_nodes = []
+
+        for node in self.nodes:
+            if node.last_seen < active_threshold:
+                inactive_nodes.append(node)
+
+        return inactive_nodes

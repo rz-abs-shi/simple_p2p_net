@@ -272,6 +272,9 @@ class Packet:
         """
         pass
 
+    def is_valid(self):
+        return True
+
 
 class PacketFactory:
     """
@@ -369,3 +372,46 @@ class PacketFactory:
         :rtype: Packet
         """
         pass
+
+
+class Parser:
+    def __init__(self, packet):
+        self._packet = packet
+
+
+class ReunionParser(Parser):
+
+    def __init__(self, packet):
+        super(ReunionParser, self).__init__(packet)
+
+        self.request_type = None
+        self.entries = None
+
+    def is_valid(self):
+        body = self._packet.get_body()
+
+        self.request_type = body[:3]
+
+        if len(body) <= 5 or (len(body) - 5) % 20 != 0:
+            return False
+
+        try:
+            number_of_entries = int(body[3:5])
+        except ValueError:
+            return False
+
+        if len(body) != 5 + 20 * number_of_entries:
+            return False
+
+        self.entries = []
+
+        for i in range(number_of_entries):
+            address = parse_address(body[5 + 20 * i: 5 + 20 * (i + 1)])
+            if address is None:
+                return False
+
+            self.entries.append(address)
+
+
+def parse_address(address: str) -> tuple:
+    pass
