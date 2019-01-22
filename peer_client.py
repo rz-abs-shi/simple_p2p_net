@@ -1,4 +1,4 @@
-from . import UserInterface, Peer, PacketFactory, Packet
+from . import UserInterface, Peer, PacketFactory, Packet, ReunionParser
 import time
 
 
@@ -46,8 +46,8 @@ class PeerClient(Peer):
         self.root_address = root_address
         self.parent_address = None
         self.status = PeerStatus()
-        self.last_reunion_back_sent = 0
-        self.reunion_sent = False
+        self.last_reunion_response_received = -1
+        self.last_reunion_request_sent = -1
 
     def handle_user_interface_command(self, command, *args):
         if super(PeerClient, self).handle_user_interface_command(command, *args):
@@ -120,3 +120,57 @@ class PeerClient(Peer):
         else:
             print("Ignoring invalid advertise packet")
 
+    def is_my_child(self, address):
+        """
+        :param address: child address
+        :return:
+        """
+        # fixme
+        return self.is_neighbour(address)
+
+    def __handle_reunion_packet(self, packet):
+        if not (self.status.is_joined and self.reunion_active):
+            print("ignoring reunion packet because this peer is not joined or reunion_active")
+            return
+
+        parser = ReunionParser(packet)
+
+        if not parser.is_valid():
+            print("Ignoring invalid reunion packet")
+            return
+
+        sender_address = packet.get_source_server_address()
+
+        if parser.request_type == Packet.REQUEST:
+            # send request packet to parent
+            if not self.is_my_child(sender_address):
+                print("Ignoring non neighbor reunion request packet")
+                return
+
+            new_entries = [*parser.entries, self.address]
+            new_packet = PacketFactory.new_reunion_packet(Packet.REQUEST, self.address, new_entries)
+            self.send_packet(self.parent_address, new_packet)
+
+        else:
+            # send response packet to child
+            if sender_address != self.parent_address:
+                print("Ignoring reunion response packet from non parent peer")
+                return
+
+            entries = parser.entries
+            if entries[0] != self.address:
+                print("Ignoring invalid reunion packet, it does not sent by me")
+                return
+
+            print("Hooray... a reunion response received!")
+            self.last_reunion_response_received = time.time()
+
+            new_entries = entries[1:]
+            if new_entries:
+                child_address = new_entries[0]
+                if not self.is_my_child(child_address):
+                    print("Propagating reunion response packet to bottom failed because the address is not my child")
+                    return
+
+                new_packet = PacketFactory.new_reunion_packet(Packet.RESPONSE, child_address, new_entries)
+                self.send_packet(child_address, new_packet)
