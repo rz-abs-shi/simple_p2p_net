@@ -25,6 +25,7 @@ class PeerRoot(Peer):
             print("Ignoring register response packet for root")
 
     def __handle_advertise_packet(self, packet: Packet):
+        # TODO: don't advertise deleted nodes or its children
         _type = packet.get_body()[0:3]
 
         if _type == Packet.REQUEST:
@@ -37,6 +38,7 @@ class PeerRoot(Peer):
             print("Ignoring advertise response packet for root")
 
     def __handle_reunion_packet(self, packet: Packet):
+        # TODO: don't accept reunion from disconnected peers and its children
         parser = ReunionParser(packet)
 
         if not parser.is_valid():

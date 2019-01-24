@@ -1,6 +1,9 @@
 from . import UserInterface, Peer, PacketFactory, Packet, ReunionParser
 import time
 
+CLIENT_REUNION_SEND_DELAY = 4
+CLIENT_REUNION_CONNECTIVITY_DEADLINE = 45
+
 
 class PeerStatus:
     STATUS_INITIAL = 0
@@ -38,6 +41,11 @@ class PeerStatus:
             self.status = self.STATUS_JOINED
             return True
 
+    def disconnect(self):
+        if self.status > self.STATUS_REGISTERED:
+            self.status = self.STATUS_REGISTERED
+            return True
+
 
 class PeerClient(Peer):
     def __init__(self, address: tuple, root_address: tuple):
@@ -64,13 +72,17 @@ class PeerClient(Peer):
             return True
 
         elif command == UserInterface.CMD_ADVERTISE:
-            if self.status.is_joined:
-                print("Ignoring command because this node is already joined.")
-                return True
+            return self.send_advertise_packet()
 
-            packet = PacketFactory.new_advertise_packet(Packet.REQUEST, self.address)
+    def send_advertise_packet(self):
+        if self.status.is_joined:
+            print("Ignoring command because this node is already joined.")
+            return True
 
-            self.send_packet(self.root_address, packet)
+        packet = PacketFactory.new_advertise_packet(Packet.REQUEST, self.address)
+        self.send_packet(self.root_address, packet)
+
+        return True
 
     def __handle_register_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
@@ -174,3 +186,39 @@ class PeerClient(Peer):
 
                 new_packet = PacketFactory.new_reunion_packet(Packet.RESPONSE, child_address, new_entries)
                 self.send_packet(child_address, new_packet)
+
+    def run_reunion_daemon(self):
+        super(PeerClient, self).run_reunion_daemon()
+        self.last_reunion_response_received = time.time()
+
+    def handle_disconnection(self):
+        if not self.status.disconnect():
+            print("Disconnecting failed!")
+            return
+
+        self.reunion_active = False
+        self.parent_address = None
+
+        print("Peer disconnected from network")
+
+        print("Sending new advertise packet!")
+        self.send_advertise_packet()
+
+    def send_new_reunion_packet(self):
+        if not (self.status.is_joined and self.parent_address and self.reunion_active):
+            print("Sending reunion packet failed because peer is not active for sending reunion packet")
+            return
+
+        print("Sending new reunion packet")
+        packet = PacketFactory.new_reunion_packet(Packet.REQUEST, self.address, [self.address])
+        self.send_packet(self.parent_address, packet)
+
+    def update_reunion(self):
+        now = time.time()
+
+        if now - self.last_reunion_response_received > CLIENT_REUNION_CONNECTIVITY_DEADLINE:
+            self.handle_disconnection()
+            return
+
+        if self.last_reunion_request_sent < 0 or (now - self.last_reunion_request_sent) > CLIENT_REUNION_SEND_DELAY:
+            self.send_new_reunion_packet()

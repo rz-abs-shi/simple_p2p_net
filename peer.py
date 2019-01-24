@@ -276,7 +276,7 @@ class Peer:
         :param packet: Arrived reunion packet
         :return:
         """
-        pass
+        raise NotImplementedError
 
     def __handle_message_packet(self, packet):
         """
@@ -322,6 +322,7 @@ class Peer:
 
     def shutdown(self):
         self._alive = False
+        self.reunion_active = False
 
     def send_packet(self, address: tuple, packet: Packet, register_connection=False):
         node = self.stream.get_or_create_node_to_server(address, register_connection)
