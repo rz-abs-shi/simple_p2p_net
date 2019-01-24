@@ -1,5 +1,6 @@
-from . import UserInterface, Peer, PacketFactory, Packet, ReunionParser
 import time
+
+from . import UserInterface, Peer, PacketFactory, Packet, ReunionParser
 
 CLIENT_REUNION_SEND_DELAY = 4
 CLIENT_REUNION_CONNECTIVITY_DEADLINE = 45
