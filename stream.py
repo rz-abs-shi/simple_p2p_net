@@ -6,19 +6,17 @@ import threading
 
 class Stream:
 
-    def __init__(self, ip, port):
+    def __init__(self, address: tuple):
         """
         The Stream object constructor.
 
         Code design suggestion:
             1. Make a separate Thread for your TCPServer and start immediately.
 
-        :param ip: 15 characters
-        :param port: 5 characters
+        :param address: (ip, port) 15 characters for ip + 5 characters for port
         """
 
-        ip = Node.parse_ip(ip)
-        port = Node.parse_port(port)
+        self.address = address
 
         self._server_in_buf = []
         self._nodes = {}
@@ -35,21 +33,15 @@ class Stream:
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
 
+        self._server = Server(*address, callback)
+
     def get_server_address(self):
         """
 
         :return: Our TCPServer address
         :rtype: tuple
         """
-        pass
-
-    def clear_in_buff(self):
-        """
-        Discard any data in TCPServer input buffer.
-
-        :return:
-        """
-        self._server_in_buf.clear()
+        return self.address
 
     def add_node(self, server_address, set_register_connection=False) -> Node:
         """
@@ -148,3 +140,18 @@ class Stream:
 
     def get_nodes(self, ignore_register=False) -> list:
         pass
+
+    def shutdown(self):
+        self._server.shutdown = True
+
+
+class Server(threading.Thread):
+
+    def __init__(self, ip, port, read_callback, *args, **kwargs):
+        super(Server, self).__init__(*args, **kwargs)
+        self.tcp_server = TCPServer(ip, port, read_callback, maximum_connections=1024)
+        self.shutdown = False
+
+    def run(self):
+        while not self.shutdown:
+            self.tcp_server.run()

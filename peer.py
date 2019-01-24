@@ -35,7 +35,7 @@ class Peer:
         self.address = address
         self._alive = False
 
-        self.stream = Stream(*self.address)
+        self.stream = Stream(self.address)
         self._last_update = time.time()
 
         self.user_interface = UserInterface(self.address)
@@ -323,6 +323,7 @@ class Peer:
     def shutdown(self):
         self._alive = False
         self.reunion_active = False
+        self.stream .shutdown()
 
     def send_packet(self, address: tuple, packet: Packet, register_connection=False):
         node = self.stream.get_or_create_node_to_server(address, register_connection)
