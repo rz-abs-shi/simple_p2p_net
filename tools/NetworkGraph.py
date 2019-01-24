@@ -1,17 +1,18 @@
 import time
+import copy
 
 
 class GraphNode:
-    def __init__(self, address: tuple):
+    def __init__(self, address: tuple, parent: 'GraphNode'=None):
         """
         :param address: (ip, port)
         :type address: tuple
+        :param parent: parent node
         """
         self.address = address
         self.last_seen = time.time()
-
-    def set_parent(self, parent: 'GraphNode'):
-        pass
+        self.children = []
+        self.parent = parent
 
     def set_address(self, new_address: tuple):
         pass
@@ -25,12 +26,21 @@ class GraphNode:
     def update_last_seen(self):
         self.last_seen = time.time()
 
+    def get_subtree_children(self) -> list:
+        if not self.children:
+            return []
+        else:
+            _nodes = copy.copy(self.children)
+            for child in self.children:  # type: GraphNode
+                _nodes += child.get_subtree_children()
+
+            return _nodes
+
 
 class NetworkGraph:
     def __init__(self, root_address: tuple):
         self.root = GraphNode(root_address)
         self.root.alive = True
-        self.nodes = [self.root]
 
     def find_live_node(self, sender):
         """
@@ -55,14 +65,18 @@ class NetworkGraph:
     def find_node(self, address: tuple) -> GraphNode:
         pass
 
-    def turn_on_node(self, address: tuple):
-        pass
+    def remove_node(self, node: GraphNode):
+        """
+        We remove the node and its children from graph. Because parent is more updated than its children
+        :param node: The node should be deleted with its subtree
+        :return:
+        """
 
-    def turn_off_node(self, address: tuple):
-        pass
+        if node.parent:
+            if node in node.parent.children:
+                node.parent.children.remove(node)
 
-    def remove_node(self, address: tuple):
-        pass
+            node.parent = None
 
     def add_node(self, address: tuple, parent_address: tuple):
         """
@@ -86,7 +100,7 @@ class NetworkGraph:
     def get_inactive_nodes(self, active_threshold):
         inactive_nodes = []
 
-        for node in self.nodes:
+        for node in self.root.get_subtree_children():
             if node.last_seen < active_threshold:
                 inactive_nodes.append(node)
 

@@ -1,5 +1,10 @@
+import time
+
 from . import Peer, Packet, PacketFactory, ReunionParser
 from tools.NetworkGraph import NetworkGraph
+
+
+CLIENT_DISCONNECTION_DEADLINE = 30
 
 
 class PeerRoot(Peer):
@@ -26,6 +31,8 @@ class PeerRoot(Peer):
 
     def __handle_advertise_packet(self, packet: Packet):
         # TODO: don't advertise deleted nodes or its children
+        # TODO: check if sender already in graph
+
         _type = packet.get_body()[0:3]
 
         if _type == Packet.REQUEST:
@@ -62,3 +69,9 @@ class PeerRoot(Peer):
 
         else:
             print("Ignoring reunion response packet")
+
+    def update_reunion(self):
+        active_threshold = time.time() - CLIENT_DISCONNECTION_DEADLINE
+
+        for client in self.graph.get_inactive_nodes(active_threshold):
+            self.graph.remove_node(client)
