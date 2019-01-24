@@ -14,14 +14,8 @@ class GraphNode:
         self.children = []
         self.parent = parent
 
-    def set_address(self, new_address: tuple):
-        pass
-
-    def __reset(self):
-        pass
-
     def add_child(self, child: 'GraphNode'):
-        pass
+        self.children.append(child)
 
     def update_last_seen(self):
         self.last_seen = time.time()
@@ -41,8 +35,9 @@ class NetworkGraph:
     def __init__(self, root_address: tuple):
         self.root = GraphNode(root_address)
         self.root.alive = True
+        self.address_to_node_map = {}
 
-    def find_live_node(self, sender):
+    def find_parent_for_new_node(self, sender):
         """
         Here we should find a neighbour for the sender.
         Best neighbour is the node who is nearest the root and has not more than one child.
@@ -60,10 +55,21 @@ class NetworkGraph:
         :return: Best neighbour for sender.
         :rtype: GraphNode
         """
-        pass
+
+        to_visit_nodes = [self.root]
+
+        while to_visit_nodes:
+            node = to_visit_nodes[0]  # type: GraphNode
+            to_visit_nodes = to_visit_nodes[1:]
+
+            if len(node.children) < 2:
+                return node
+            else:
+                for c in node.children:
+                    to_visit_nodes.append(c)
 
     def find_node(self, address: tuple) -> GraphNode:
-        pass
+        return self.address_to_node_map.get(address)
 
     def remove_node(self, node: GraphNode):
         """
@@ -78,17 +84,8 @@ class NetworkGraph:
 
             node.parent = None
 
-    def add_node(self, address: tuple, parent_address: tuple):
-        """
-        Add a new node with node_address if it does not exist in our NetworkGraph and set its father.
-
-        Warnings:
-            1. Don't forget to set the new node as one of the father_address children.
-            2. Before using this function make sure that there is a node which has father_address.
-
-        :return:
-        """
-        pass
+        if node.address in self.address_to_node_map:
+            del self.address_to_node_map[node.address]
 
     def insert_node(self, address: tuple) -> tuple:
         """
@@ -96,6 +93,11 @@ class NetworkGraph:
         :param address:
         :return: address of parent
         """
+        parent = self.find_parent_for_new_node(address)
+        node = GraphNode(address, parent)
+        parent.add_child(node)
+
+        return parent.address
 
     def get_inactive_nodes(self, active_threshold):
         inactive_nodes = []
