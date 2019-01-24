@@ -30,14 +30,18 @@ class PeerRoot(Peer):
             print("Ignoring register response packet for root")
 
     def __handle_advertise_packet(self, packet: Packet):
-        # TODO: don't advertise deleted nodes or its children
-        # TODO: check if sender already in graph
-
         _type = packet.get_body()[0:3]
 
         if _type == Packet.REQUEST:
             sender_address = packet.get_source_server_address()
-            parent_address = self.graph.insert_node(sender_address)
+            # check if sender is already in graph
+            node = self.graph.find_node(sender_address)
+
+            if not node:
+                parent_address = self.graph.insert_node(sender_address)
+            else:
+                parent_address = node.parent.address
+
             resp_packet = PacketFactory.new_advertise_packet(Packet.RESPONSE, self.address, parent_address)
             self.send_packet(sender_address, resp_packet)
 
