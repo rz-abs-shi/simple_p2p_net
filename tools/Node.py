@@ -23,7 +23,6 @@ class Node:
         print("Server Address: ", server_address)
 
         self.out_buff = []
-        pass
 
     def send_message(self):
         """

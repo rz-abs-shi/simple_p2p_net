@@ -82,6 +82,7 @@ class Stream:
 
         if key:
             del self._nodes[key]
+            node.close()
 
     def get_node_by_server(self, address: tuple, register_connection=False) -> Node:
         """
