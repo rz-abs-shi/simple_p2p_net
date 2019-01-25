@@ -33,7 +33,7 @@ class Peer:
         """
 
         self.address = address
-        self._alive = False
+        self._alive = True
 
         self.stream = Stream(self.address)
         self._last_update = time.time()
@@ -68,7 +68,6 @@ class Peer:
         update loop handler
         * sleep for at most 2 seconds
         """
-
         while self._alive:
             now_time = time.time()
             delta = now_time - self._last_update
@@ -105,7 +104,8 @@ class Peer:
 
         # Handling user interface
         for buf in self.user_interface.read_and_clear_buffer():
-            self.handle_user_interface_command(*buf)
+            if not self.handle_user_interface_command(*buf):
+                print("invalid command")
 
         self.stream.send_out_buf_messages()
 
@@ -172,6 +172,9 @@ class Peer:
         """
 
         _type = packet.get_type()
+
+        print("Packet received")
+        packet.print()
 
         if _type == packet.TYPE_REGISTER:
             self.__handle_register_packet(packet)

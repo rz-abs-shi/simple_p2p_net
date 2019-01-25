@@ -192,6 +192,14 @@ class Packet:
     REQUEST = 'REQ'
     ACK = 'ACK'
 
+    verbose_map = {
+        TYPE_REGISTER: 'register',
+        TYPE_ADVERTISE: 'advertise',
+        TYPE_JOIN: 'join',
+        TYPE_MESSAGE: 'message',
+        TYPE_REUNION: 'reunion'
+    }
+
     def __init__(self, version: int, _type: int, source_server_ip: str, source_server_port: str, body: str):
         self.version = version
         self._type = _type
@@ -280,6 +288,12 @@ class Packet:
         port = header[7]
 
         return Packet(header[0], header[1], ip, port, body_buf.decode())
+
+    def print(self):
+        print("version: %d, type: %s, length: %d" % (self.version, self.verbose_map[self._type], self.get_length()))
+        print("source: %s:%s" % (self.get_source_server_ip(), self.get_source_server_port()))
+        print(self.body)
+        print('-----------------------------------')
 
 
 class PacketFactory:
