@@ -8,8 +8,9 @@ class UserInterface(threading.Thread):
     CMD_REGISTER = 'register'
     CMD_ADVERTISE = 'advertise'
     CMD_MESSAGE = 'message'
+    CMD_PARENT = 'parent'
 
-    VALID_COMMANDS = (CMD_EXIT, CMD_REGISTER, CMD_ADVERTISE, CMD_MESSAGE)
+    VALID_COMMANDS = (CMD_EXIT, CMD_REGISTER, CMD_ADVERTISE, CMD_MESSAGE, CMD_PARENT)
 
     def __init__(self, address, is_root=False, *args, **kwargs):
         super(UserInterface, self).__init__(*args, **kwargs)

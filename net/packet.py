@@ -179,6 +179,7 @@
 """
 from struct import *
 from tools.Node import Node
+from tools.time import print_time
 
 
 class Packet:
@@ -290,6 +291,7 @@ class Packet:
         return Packet(header[0], header[1], ip, port, body_buf.decode())
 
     def print(self):
+        print_time()
         print("version: %d, type: %s, length: %d" % (self.version, self.verbose_map[self._type], self.get_length()))
         print("source: %s:%s" % (self.get_source_server_ip(), self.get_source_server_port()))
         print(self.body)

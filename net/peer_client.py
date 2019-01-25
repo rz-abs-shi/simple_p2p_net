@@ -76,6 +76,10 @@ class PeerClient(Peer):
         elif command == UserInterface.CMD_ADVERTISE:
             return self.send_advertise_packet()
 
+        elif command == UserInterface.CMD_PARENT:
+            print("Parent is " + str(self.parent_address))
+            return True
+
     def send_advertise_packet(self):
         if self.status.is_joined:
             print("Ignoring command because this node is already joined.")
