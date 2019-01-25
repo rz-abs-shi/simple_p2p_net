@@ -105,6 +105,8 @@ class PeerClient(Peer):
     def _handle_advertise_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
 
+        print("Requesting for parent")
+
         if _type == Packet.REQUEST:
             print("Ignoring advertise request packet for client")
 
@@ -113,22 +115,23 @@ class PeerClient(Peer):
                 print("Ignoring advertise response packet, because is already joined!")
 
             else:
-                parent_ip = packet.get_body()[4:19]
-                parent_port = packet.get_body()[20:25]
+                parent_ip = packet.get_body()[3:18]
+                parent_port = packet.get_body()[18:23]
 
                 if not parent_ip or not parent_port:
                     print("invalid advertise packet")
                     return
 
-                parent_address = (parent_ip, parent_port)
+                self.parent_address = (parent_ip, parent_port)
 
                 self.status.set_advertised()
 
                 print("Sending join message")
                 packet = PacketFactory.new_join_packet((parent_ip, parent_port))
-                self.send_packet(parent_address, packet)
+                self.send_packet(self.parent_address, packet)
 
                 print("Starting reunion daemon")
+                self.status.set_joined()
                 self.run_reunion_daemon()
         else:
             print("Ignoring invalid advertise packet")
@@ -208,6 +211,11 @@ class PeerClient(Peer):
     def send_new_reunion_packet(self):
         if not (self.status.is_joined and self.parent_address and self.reunion_active):
             print("Sending reunion packet failed because peer is not active for sending reunion packet")
+            print("joined: %s, parent_address: %s, reunion_active: %s" % (
+                self.status.is_joined, self.parent_address, self.reunion_active
+            ))
+            print("disabling reunion sending")
+            self.reunion_active = False
             return
 
         print("Sending new reunion packet")

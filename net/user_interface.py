@@ -6,7 +6,7 @@ class UserInterface(threading.Thread):
 
     CMD_EXIT = 'exit'
     CMD_REGISTER = 'register'
-    CMD_ADVERTISE = 'advertiser'
+    CMD_ADVERTISE = 'advertise'
     CMD_MESSAGE = 'message'
 
     VALID_COMMANDS = (CMD_EXIT, CMD_REGISTER, CMD_ADVERTISE, CMD_MESSAGE)
