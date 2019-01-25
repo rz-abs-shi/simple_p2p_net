@@ -470,6 +470,8 @@ class ReunionParser(Parser):
 
             self.entries.append(address)
 
+        return True
+
 
 def parse_address(address: str) -> tuple:
     return Node.parse_ip(address[:15]), Node.parse_port(address[15:])
