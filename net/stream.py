@@ -19,7 +19,7 @@ class Stream:
         self.address = address
 
         self._server_in_buf = []
-        self._nodes = {}
+        self._nodes = {}  # key: (server_address, registered), value: Node
 
         def callback(address, queue, data):
             """
@@ -34,6 +34,7 @@ class Stream:
             self._server_in_buf.append(data)
 
         self._server = Server(*address, callback)
+        self._server.start()
 
     def get_server_address(self):
         """
@@ -55,7 +56,11 @@ class Stream:
 
         :return:
         """
-        pass
+
+        node = Node(server_address, set_register=set_register_connection)
+        self._nodes[server_address, set_register_connection] = node
+
+        return node
 
     def remove_node(self, node):
         """
@@ -69,9 +74,16 @@ class Stream:
 
         :return:
         """
-        pass
+        key = None
+        for _key, value in self._nodes.items():
+            if value == node:
+                key = _key
+                break
 
-    def get_node_by_server(self, address: tuple) -> Node:
+        if key:
+            del self._nodes[key]
+
+    def get_node_by_server(self, address: tuple, register_connection=False) -> Node:
         """
 
         Will find the node that has IP/Port address of input.
@@ -80,11 +92,12 @@ class Stream:
             1. Before comparing the address parse it to a standard format with Node.parse_### functions.
 
         :param address: input address (IP, Port) tuple
+        :param register_connection:
 
         :return: The node that input address.
         :rtype: Node
         """
-        pass
+        return self._nodes.get(address, register_connection)
 
     def get_or_create_node_to_server(self, address: tuple, register_connection=False) -> Node:
         """
@@ -92,42 +105,17 @@ class Stream:
         :param register_connection: if set True send via register_connection node
         :return:
         """
-        pass
+        node = self.get_node_by_server(address, register_connection)
 
-    def add_message_to_out_buff(self, address, message):
-        """
-        In this function, we will add the message to the output buffer of the node that has the input address.
-        Later we should use send_out_buf_messages to send these buffers into their sockets.
+        if not node:
+            node = self.add_node(address, register_connection)
 
-        :param address: Node address that we want to send the message
-        :param message: Message we want to send
-
-        Warnings:
-            1. Check whether the node address is in our nodes or not.
-
-        :return:
-        """
-        pass
+        return node
 
     def read_and_clear_in_buf(self) -> list:
         in_bufs = self._server_in_buf
         self._server_in_buf = []
         return in_bufs
-    
-    def send_messages_to_node(self, node):
-        """
-        Send buffered messages to the 'node'
-
-        Warnings:
-            1. Insert an exception handler here; Maybe the node socket you want to send the message has turned off and
-            you need to remove this node from stream nodes.
-
-        :param node:
-        :type node Node
-
-        :return:
-        """
-        pass
 
     def send_out_buf_messages(self):
         """
@@ -135,14 +123,28 @@ class Stream:
 
         :return:
         """
-        for node in self._nodes:  # type: Node
+        for node in self._nodes.values():  # type: Node
             node.send_message()
 
     def get_nodes(self, ignore_register=False) -> list:
-        pass
+        if not ignore_register:
+            raise NotImplementedError
+
+        nodes = []
+
+        for (_, registered), node in self._nodes.items():
+            if not registered:
+                nodes.append(node)
+
+        return nodes
 
     def shutdown(self):
-        self._server.shutdown = True
+        self._server.close()
+        self._server.join(1)
+        self._server = None
+
+        for c in self._nodes.values():  # type: Node
+            c.close()
 
 
 class Server(threading.Thread):
@@ -155,3 +157,6 @@ class Server(threading.Thread):
     def run(self):
         while not self.shutdown:
             self.tcp_server.run()
+
+    def close(self):
+        self.shutdown = True
