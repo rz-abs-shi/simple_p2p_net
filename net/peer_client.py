@@ -76,11 +76,22 @@ class PeerClient(Peer):
         elif command == UserInterface.CMD_ADVERTISE:
             return self.send_advertise_packet()
 
-        elif command == UserInterface.CMD_PARENT:
+        elif command == UserInterface.CMD_STATUS:
+            print("=====================================")
             print("Parent is " + str(self.parent_address))
+            print("Children: ")
+            for node in self.stream.get_nodes(True):
+                print("  " + str(node.get_server_address()))
+            print("=====================================")
+
             return True
 
     def send_advertise_packet(self):
+
+        if not self.status.is_registered:
+            print("Ignoring command because this node is not registered yet!")
+            return True
+
         if self.status.is_joined:
             print("Ignoring command because this node is already joined.")
             return True
@@ -137,6 +148,7 @@ class PeerClient(Peer):
 
                 print("Starting reunion daemon")
                 self.status.set_joined()
+
                 self.run_reunion_daemon()
         else:
             print("Ignoring invalid advertise packet")
@@ -164,9 +176,11 @@ class PeerClient(Peer):
 
         if parser.request_type == Packet.REQUEST:
             # send request packet to parent
-            if not self.is_my_child(sender_address):
-                print("Ignoring non neighbor reunion request packet")
-                return
+
+            # TODO: handle this later
+            # if not self.is_my_child(sender_address):
+            #     print("Ignoring non neighbor reunion request packet")
+            #     return
 
             new_entries = [*parser.entries, self.address]
             new_packet = PacketFactory.new_reunion_packet(Packet.REQUEST, self.address, new_entries)

@@ -107,3 +107,18 @@ class NetworkGraph:
                 inactive_nodes.append(node)
 
         return inactive_nodes
+
+    def print(self):
+        to_visit_nodes = [self.root]
+
+        print("Network Graph")
+        while to_visit_nodes:
+            node = to_visit_nodes[0]  # type: GraphNode
+            to_visit_nodes = to_visit_nodes[1:]
+
+            print("Node: " + str(node.address))
+
+            for c in node.children:
+                to_visit_nodes.append(c)
+                print("Children")
+                print("   " + str(c.address))

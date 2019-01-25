@@ -1,5 +1,6 @@
 import time
 
+from net import UserInterface
 from . import Peer, Packet, PacketFactory, ReunionParser
 from tools.NetworkGraph import NetworkGraph
 
@@ -17,6 +18,16 @@ class PeerRoot(Peer):
     @property
     def is_root(self):
         return True
+
+    def handle_user_interface_command(self, command, *args):
+        if super(PeerRoot, self).handle_user_interface_command(command, *args):
+            return True
+
+        if command == UserInterface.CMD_STATUS:
+            print("=====================================")
+            print("Node Graph")
+            self.graph.print()
+            return True
 
     def _handle_register_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
@@ -78,4 +89,5 @@ class PeerRoot(Peer):
         active_threshold = time.time() - CLIENT_DISCONNECTION_DEADLINE
 
         for client in self.graph.get_inactive_nodes(active_threshold):
+            print("Removing client %s because of late reunion" % str(client.address))
             self.graph.remove_node(client)
