@@ -18,7 +18,7 @@ class PeerRoot(Peer):
     def is_root(self):
         return True
 
-    def __handle_register_packet(self, packet: Packet):
+    def _handle_register_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
 
         if _type == Packet.REQUEST:
@@ -29,7 +29,7 @@ class PeerRoot(Peer):
         else:
             print("Ignoring register response packet for root")
 
-    def __handle_advertise_packet(self, packet: Packet):
+    def _handle_advertise_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
 
         if _type == Packet.REQUEST:
@@ -48,7 +48,7 @@ class PeerRoot(Peer):
         else:
             print("Ignoring advertise response packet for root")
 
-    def __handle_reunion_packet(self, packet: Packet):
+    def _handle_reunion_packet(self, packet: Packet):
         # TODO: don't accept reunion from disconnected peers and its children
         parser = ReunionParser(packet)
 

@@ -85,7 +85,7 @@ class PeerClient(Peer):
 
         return True
 
-    def __handle_register_packet(self, packet: Packet):
+    def _handle_register_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
 
         if _type == Packet.REQUEST:
@@ -102,7 +102,7 @@ class PeerClient(Peer):
         else:
             print("Ignoring invalid register packet")
 
-    def __handle_advertise_packet(self, packet: Packet):
+    def _handle_advertise_packet(self, packet: Packet):
         _type = packet.get_body()[0:3]
 
         if _type == Packet.REQUEST:
@@ -141,7 +141,7 @@ class PeerClient(Peer):
         # fixme
         return self.is_neighbour(address)
 
-    def __handle_reunion_packet(self, packet):
+    def _handle_reunion_packet(self, packet):
         if not (self.status.is_joined and self.reunion_active):
             print("ignoring reunion packet because this peer is not joined or reunion_active")
             return

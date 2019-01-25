@@ -96,7 +96,6 @@ class Peer:
 
         :return:
         """
-        
         # Handling in buffer
         for buf in self.stream.read_and_clear_in_buf():
             packet = PacketFactory.parse_buffer(buf)
@@ -177,24 +176,24 @@ class Peer:
         packet.print()
 
         if _type == packet.TYPE_REGISTER:
-            self.__handle_register_packet(packet)
+            self._handle_register_packet(packet)
 
         elif _type == packet.TYPE_ADVERTISE:
-            self.__handle_advertise_packet(packet)
+            self._handle_advertise_packet(packet)
 
         elif _type == packet.TYPE_JOIN:
-            self.__handle_join_packet(packet)
+            self._handle_join_packet(packet)
 
         elif _type == packet.TYPE_MESSAGE:
-            self.__handle_message_packet(packet)
+            self._handle_message_packet(packet)
 
         elif _type == packet.TYPE_REUNION:
-            self.__handle_reunion_packet(packet)
+            self._handle_reunion_packet(packet)
 
         else:
             print("Ignoring invalid packet of type: %s" % _type)
 
-    def __handle_advertise_packet(self, packet):
+    def _handle_advertise_packet(self, packet):
         """
         For advertising peers in the network, It is peer discovery message.
 
@@ -224,7 +223,7 @@ class Peer:
         """
         raise NotImplementedError
 
-    def __handle_register_packet(self, packet: Packet):
+    def _handle_register_packet(self, packet: Packet):
         """
         For registration a new node to the network at first we should make a Node with stream.add_node for'sender' and
         save it.
@@ -241,7 +240,7 @@ class Peer:
         """
         raise NotImplementedError
 
-    def __handle_join_packet(self, packet: Packet):
+    def _handle_join_packet(self, packet: Packet):
         """
         When a Join packet received we should add a new node to our nodes array.
         In reality, there is a security level that forbids joining every node to our network.
@@ -256,7 +255,7 @@ class Peer:
         sender_address = packet.get_source_server_address()
         self.stream.add_node(sender_address)
 
-    def __handle_reunion_packet(self, packet):
+    def _handle_reunion_packet(self, packet):
         """
         In this function we should handle Reunion packet was just arrived.
 
@@ -281,7 +280,7 @@ class Peer:
         """
         raise NotImplementedError
 
-    def __handle_message_packet(self, packet):
+    def _handle_message_packet(self, packet):
         """
         Only broadcast message to the other nodes.
 
