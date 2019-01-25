@@ -1,8 +1,8 @@
 import time
 
-from packet import Packet, PacketFactory
-from stream import Stream
-from user_interface import UserInterface
+from net.packet import Packet, PacketFactory
+from net.stream import Stream
+from net.user_interface import UserInterface
 
 """
     Peer is our main object in this project.

@@ -1,4 +1,4 @@
-from . import PeerRoot, PeerClient
+from net import PeerRoot, PeerClient
 import argparse
 from ipaddress import ip_address
 
