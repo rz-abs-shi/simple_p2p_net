@@ -41,8 +41,11 @@ class UserInterface(threading.Thread):
 
             if cmd == self.CMD_MESSAGE and len(command_parts) != 2:
                 print("'message' command takes only 1 argument")
-            elif len(command_parts) != 1:
+                continue
+
+            elif cmd != self.CMD_MESSAGE and len(command_parts) != 1:
                 print("'%s' command takes no argument" % cmd)
+                continue
 
             if cmd in self.VALID_COMMANDS:
                 self._buffer.append(command_parts)
