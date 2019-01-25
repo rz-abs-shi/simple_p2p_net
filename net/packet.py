@@ -282,7 +282,7 @@ class Packet:
         header = unpack("!HHIHHHHI", header_buf)
 
         if header[2] != len(body_buf):
-            raise ValueError("invalid packet length")
+            raise ValueError("invalid packet length %d != %d" % (header[2], len(body_buf)))
 
         ip = "%d.%d.%d.%d" % header[3:7]
         port = header[7]

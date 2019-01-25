@@ -98,6 +98,7 @@ class Peer:
         """
         # Handling in buffer
         for buf in self.stream.read_and_clear_in_buf():
+            print(buf)
             packet = PacketFactory.parse_buffer(buf)
             self.handle_packet(packet)
 

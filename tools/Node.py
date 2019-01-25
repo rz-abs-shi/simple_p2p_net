@@ -34,9 +34,9 @@ class Node:
         :return:
         """
 
-        data = b''.join(self.out_buff)
-
-        self.client.send(data)
+        while self.out_buff:
+            buf = self.out_buff.pop()
+            self.client.send(buf)
 
     def add_message_to_out_buff(self, message):
         """
