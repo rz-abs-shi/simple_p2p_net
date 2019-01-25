@@ -99,7 +99,7 @@ class Stream:
         :return: The node that input address.
         :rtype: Node
         """
-        return self._nodes.get(address, register_connection)
+        return self._nodes.get((address, register_connection))
 
     def get_or_create_node_to_server(self, address: tuple, register_connection=False) -> Node:
         """
