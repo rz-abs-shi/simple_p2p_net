@@ -329,7 +329,7 @@ class PacketFactory:
 
         body = type + str(len(nodes_array)).zfill(2) + ''.join(entities)
 
-        return Packet(1, 5, *source_address, body)
+        return Packet(1, Packet.TYPE_REUNION, *source_address, body)
 
     @staticmethod
     def new_advertise_packet(type, source_server_address, neighbour: tuple=None):
@@ -357,7 +357,7 @@ class PacketFactory:
 
             body = Packet.RESPONSE + Node.parse_ip(neighbour[0]) + Node.parse_port(neighbour[1])
 
-        return Packet(1, 2, *source_server_address, body)
+        return Packet(1, Packet.TYPE_ADVERTISE, *source_server_address, body)
 
     @staticmethod
     def new_join_packet(source_server_address) -> Packet:
@@ -370,7 +370,7 @@ class PacketFactory:
         :rtype Packet
 
         """
-        return Packet(1, 3, *source_server_address, 'JOIN')
+        return Packet(1, Packet.TYPE_JOIN, *source_server_address, 'JOIN')
 
     @staticmethod
     def new_register_packet(type, source_server_address, address=(None, None)) -> Packet:
@@ -398,7 +398,7 @@ class PacketFactory:
         else:
             body = Packet.RESPONSE + Packet.ACK
 
-        return Packet(1, 1, *source_server_address, body)
+        return Packet(1, Packet.TYPE_REGISTER, *source_server_address, body)
 
     @staticmethod
     def new_message_packet(message, source_server_address):
@@ -415,7 +415,7 @@ class PacketFactory:
         :rtype: Packet
         """
 
-        return Packet(1, 4, *source_server_address, message)
+        return Packet(1, Packet.TYPE_MESSAGE, *source_server_address, message)
 
 
 class Parser:
