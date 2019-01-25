@@ -57,6 +57,7 @@ class PeerClient(Peer):
         self.status = PeerStatus()
         self.last_reunion_response_received = -1
         self.last_reunion_request_sent = -1
+        self.reunion_sent = False
 
     def handle_user_interface_command(self, command, *args):
         if super(PeerClient, self).handle_user_interface_command(command, *args):
@@ -180,6 +181,7 @@ class PeerClient(Peer):
 
             print("Hooray... a reunion response received!")
             self.last_reunion_response_received = time.time()
+            self.reunion_sent = False
 
             new_entries = entries[1:]
             if new_entries:
@@ -194,6 +196,7 @@ class PeerClient(Peer):
     def run_reunion_daemon(self):
         super(PeerClient, self).run_reunion_daemon()
         self.last_reunion_response_received = time.time()
+        self.reunion_sent = False
 
     def handle_disconnection(self):
         if not self.status.disconnect():
@@ -221,6 +224,7 @@ class PeerClient(Peer):
         print("Sending new reunion packet")
         packet = PacketFactory.new_reunion_packet(Packet.REQUEST, self.address, [self.address])
         self.send_packet(self.parent_address, packet)
+        self.reunion_sent = True
 
     def update_reunion(self):
         now = time.time()
@@ -229,5 +233,8 @@ class PeerClient(Peer):
             self.handle_disconnection()
             return
 
-        if self.last_reunion_request_sent < 0 or (now - self.last_reunion_request_sent) > CLIENT_REUNION_SEND_DELAY:
+        if not self.reunion_sent and (
+                self.last_reunion_request_sent < 0 or
+                (now - self.last_reunion_request_sent) > CLIENT_REUNION_SEND_DELAY
+        ):
             self.send_new_reunion_packet()
