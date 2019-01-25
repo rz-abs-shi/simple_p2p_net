@@ -24,7 +24,8 @@ class Node:
 
         self.out_buff = []
 
-        self.client = ClientSocket()
+        server_real_address = self.real_address(server_address)
+        self.client = ClientSocket(*server_real_address, single_use=False)
 
     def send_message(self):
         """
@@ -32,7 +33,10 @@ class Node:
 
         :return:
         """
-        pass
+
+        data = b''.join(self.out_buff)
+
+        self.client.send(data)
 
     def add_message_to_out_buff(self, message):
         """

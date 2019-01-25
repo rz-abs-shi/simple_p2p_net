@@ -33,7 +33,8 @@ class Stream:
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
 
-        self._server = Server(*address, callback)
+        real_address = Node.real_address(address)
+        self._server = Server(*real_address, callback)
         self._server.start()
 
     def get_server_address(self):
