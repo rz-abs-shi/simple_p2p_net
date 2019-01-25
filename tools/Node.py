@@ -24,6 +24,8 @@ class Node:
 
         self.out_buff = []
 
+        self.client = ClientSocket()
+
     def send_message(self):
         """
         Final function to send buffer to the client's socket.
@@ -79,3 +81,22 @@ class Node:
         :rtype: str
         """
         return str(int(port)).zfill(5)
+
+    @staticmethod
+    def parse_address(address: tuple) -> tuple:
+        """
+        (127.0.0.1, 7000) => (127.000.000.001, 07000)
+        :return:
+        """
+        return Node.parse_ip(address[0]), Node.parse_port(address[1])
+
+    @staticmethod
+    def real_address(address: tuple) -> tuple:
+        """
+        (127.000.000.001, 07000) => (127.0.0.1, 7000)
+        :param address:
+        :return:
+        """
+        ip, port = address
+        real_ip = '.'.join(map(str, map(int, ip.split('.'))))
+        return real_ip, int(port)

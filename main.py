@@ -1,6 +1,8 @@
-from net import PeerRoot, PeerClient
 import argparse
 from ipaddress import ip_address
+
+from net import PeerRoot, PeerClient
+from tools import Node
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create a peer')
@@ -14,7 +16,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    address = (str(args.ip), args.port)
+    address = Node.parse_address((str(args.ip), args.port))
 
     if args.is_root:
         peer = PeerRoot(address)
@@ -23,7 +25,7 @@ if __name__ == "__main__":
             print("Error: you should specify root-ip and root-port")
             exit(1)
 
-        root_address = (str(args.root_ip), args.root_port)
+        root_address = Node.parse_address((str(args.root_ip), args.root_port))
         peer = PeerClient(address, root_address)
 
     peer.run()
