@@ -190,6 +190,7 @@ class Packet:
 
     RESPONSE = 'RES'
     REQUEST = 'REQ'
+    ACK = 'ACK'
 
     def __init__(self, version: int, _type: int, source_server_ip: str, source_server_port: str, body: str):
         self.version = version
@@ -297,10 +298,10 @@ class PacketFactory:
         :rtype: Packet
 
         """
-        return Packet(buffer)
+        return Packet.new_packet(buffer)
 
     @staticmethod
-    def new_reunion_packet(type, source_address, nodes_array):
+    def new_reunion_packet(type, source_address, nodes_array: list):
         """
         :param type: Reunion Hello (REQ) or Reunion Hello Back (RES)
         :param source_address: IP/Port address of the packet sender.
@@ -313,10 +314,25 @@ class PacketFactory:
         :return New reunion packet.
         :rtype Packet
         """
-        pass
+
+        if type not in (Packet.REQUEST, Packet.RESPONSE):
+            raise ValueError("invalid type")
+
+        if len(nodes_array) > 99:
+            raise ValueError("too long nodes_array")
+
+        entities = []
+
+        for ip, port in nodes_array:
+            entities.append(Node.parse_ip(ip))
+            entities.append(Node.parse_port(port))
+
+        body = type + str(len(nodes_array)).zfill(2) + ''.join(entities)
+
+        return Packet(1, 5, *source_address, body)
 
     @staticmethod
-    def new_advertise_packet(type, source_server_address, neighbour=None):
+    def new_advertise_packet(type, source_server_address, neighbour: tuple=None):
         """
         :param type: Type of Advertise packet
         :param source_server_address Server address of the packet sender.
@@ -330,7 +346,18 @@ class PacketFactory:
         :rtype Packet
 
         """
-        pass
+        if type not in (Packet.REQUEST, Packet.RESPONSE):
+            raise ValueError("invalid type")
+
+        if type == Packet.REQUEST:
+            body = Packet.REQUEST
+        else:
+            if not neighbour:
+                raise ValueError("neighbour should provided for response")
+
+            body = Packet.RESPONSE + Node.parse_ip(neighbour[0]) + Node.parse_port(neighbour[1])
+
+        return Packet(1, 2, *source_server_address, body)
 
     @staticmethod
     def new_join_packet(source_server_address) -> Packet:
@@ -343,7 +370,7 @@ class PacketFactory:
         :rtype Packet
 
         """
-        pass
+        return Packet(1, 3, *source_server_address, 'JOIN')
 
     @staticmethod
     def new_register_packet(type, source_server_address, address=(None, None)) -> Packet:
@@ -358,9 +385,20 @@ class PacketFactory:
 
         :return New Register packet.
         :rtype Packet
-
         """
-        pass
+        if type not in (Packet.REQUEST, Packet.RESPONSE):
+            raise ValueError("invalid type")
+
+        if type == Packet.REQUEST:
+            if not address:
+                raise ValueError("address must be set in request")
+
+            body = Packet.REQUEST + Node.parse_ip(address[0]) + Node.parse_port(address[1])
+
+        else:
+            body = Packet.RESPONSE + Packet.ACK
+
+        return Packet(1, 1, *source_server_address, body)
 
     @staticmethod
     def new_message_packet(message, source_server_address):
@@ -376,7 +414,8 @@ class PacketFactory:
         :return: New Message packet.
         :rtype: Packet
         """
-        pass
+
+        return Packet(1, 4, *source_server_address, message)
 
 
 class Parser:
@@ -419,4 +458,4 @@ class ReunionParser(Parser):
 
 
 def parse_address(address: str) -> tuple:
-    pass
+    return Node.parse_ip(address[:15]), Node.parse_port(address[15:])
