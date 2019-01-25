@@ -129,7 +129,7 @@ class Stream:
         """
         pass
 
-    def send_out_buf_messages(self, only_register=False):
+    def send_out_buf_messages(self):
         """
         In this function, we will send whole out buffers to their own clients.
 

@@ -178,6 +178,7 @@
     
 """
 from struct import *
+from tools.Node import Node
 
 
 class Packet:
@@ -190,38 +191,23 @@ class Packet:
     RESPONSE = 'RES'
     REQUEST = 'REQ'
 
-    def __init__(self, buf):
-        """
-        The decoded buffer should convert to a new packet.
+    def __init__(self, version: int, _type: int, source_server_ip: str, source_server_port: str, body: str):
+        self.version = version
+        self._type = _type
+        self.source_server_ip = source_server_ip
+        self.source_server_port = source_server_port
+        self.body = body
+        self._ip_parts = list(map(int, source_server_ip.split('.')))
 
-        :param buf: Input buffer was just decoded.
-        :type buf: bytearray
-        """
-        pass
-
-    def get_header(self):
-        """
-
-        :return: Packet header
-        :rtype: str
-        """
-        pass
-
-    def get_version(self):
-        """
-
-        :return: Packet Version
-        :rtype: int
-        """
-        pass
+        if len(self._ip_parts) != 4:
+            raise ValueError("invalid ip")
 
     def get_type(self):
-        """
-
+        """en(body)
         :return: Packet type
         :rtype: int
         """
-        pass
+        return self._type
 
     def get_length(self):
         """
@@ -229,15 +215,14 @@ class Packet:
         :return: Packet length
         :rtype: int
         """
-        pass
+        return len(self.body)
 
     def get_body(self):
         """
-
         :return: Packet body
         :rtype: str
         """
-        pass
+        return self.body
 
     def get_buf(self):
         """
@@ -246,7 +231,14 @@ class Packet:
         :return The parsed packet to the network format.
         :rtype: bytearray
         """
-        pass
+        return pack(
+            "!HHIHHHHI",
+            self.version,
+            self._type,
+            self.get_length(),
+            *self._ip_parts,
+            int(self.source_server_port),
+        ) + self.body.encode()
 
     def get_source_server_ip(self):
         """
@@ -254,26 +246,39 @@ class Packet:
         :return: Server IP address for the sender of the packet.
         :rtype: str
         """
-        pass
+        return Node.parse_ip(self.source_server_ip)
 
     def get_source_server_port(self):
         """
-
         :return: Server Port address for the sender of the packet.
         :rtype: str
         """
-        pass
+        return Node.parse_port(self.source_server_port)
 
     def get_source_server_address(self):
         """
-
         :return: Server address; The format is like ('192.168.001.001', '05335').
         :rtype: tuple
         """
-        pass
+        return self.get_source_server_ip(), self.get_source_server_port()
 
-    def is_valid(self):
-        return True
+    @classmethod
+    def new_packet(cls, buf: bytes):
+        if len(buf) < 20:
+            raise ValueError("invalid buf")
+
+        header_buf = buf[:20]
+        body_buf = buf[20:]
+
+        header = unpack("!HHIHHHHI", header_buf)
+
+        if header[2] != len(body_buf):
+            raise ValueError("invalid packet length")
+
+        ip = "%d.%d.%d.%d" % header[3:7]
+        port = header[7]
+
+        return Packet(header[0], header[1], ip, port, body_buf.decode())
 
 
 class PacketFactory:
